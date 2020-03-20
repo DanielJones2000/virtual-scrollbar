@@ -55,15 +55,16 @@ export default {
             this.scrollWidth = scrollWidth
             this.clientWidth = clientWidth
             this.clientHeight = clientHeight
-            this.percentage = this.clientHeight / this.scrollHeight
+            const percentage = this.clientHeight / this.scrollHeight
             this.showBar = true
-            if(this.percentage === 1) {
+            if(percentage === 1) {
                 this.showBar = false
             }
-            this.thumbHeight = Math.round(this.clientHeight * this.percentage)
+            this.thumbHeight = Math.round(this.clientHeight * percentage)
             if(this.thumbHeight < this.minThumbHeight) {
                 this.thumbHeight = this.minThumbHeight
             }
+            this.percentage = (this.clientHeight - this.thumbHeight) / this.scrollHeight
         })
     },
     methods: {
@@ -91,7 +92,7 @@ export default {
             if(this.thumbY + this.thumbHeight > this.clientHeight) {
                 this.thumbY = this.clientHeight - this.thumbHeight
             }
-            this.$refs.content.scrollTop = this.thumbY/this.percentage
+            this.$refs.content.scrollTop = this.thumbY / this.percentage
         }
     },
     beforeDestroy() {
