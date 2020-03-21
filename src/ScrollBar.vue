@@ -4,8 +4,8 @@
              class="common-scrollBar-content">
             <slot></slot>
         </div>
-        <div class="common-scrollBar-track" 
-             :style="{display:showTrack}">
+        <div v-if="showHorizontalTrack"
+             class="common-scrollBar-track">
             <div class="common-scrollBar-thumb" 
                  :style="thumbVerticalStyle"
                  @pointerdown="pointerdown">
@@ -21,14 +21,11 @@ export default {
                 height:`${this.thumbHeight}px`,
                 top:`${this.thumbY}px`
             }
-        },
-        showTrack() {
-            return this.showBar ? 'block' : 'none'
         }
     },
     data() {
         return {
-            showBar: false,
+            showHorizontalTrack: false,
             scrollHeight: 0,
             scrollWidth: 0,
             clientWidth: 0,
@@ -41,7 +38,8 @@ export default {
             },
             thumbY: 0,
             percentage: 1,
-            thumbHeight: 0
+            thumbHeight: 0,
+            observer: null
         }
     },
     created() {
@@ -49,25 +47,37 @@ export default {
         document.addEventListener('pointermove', this.pointermove, true)
     },
     mounted() {
+        this.observer = new MutationObserver(() => {
+            this.resetSize()
+        })
         this.$nextTick(() => {
+            this.observer.observe(this.$refs.content, {
+              attributes: true,
+              childList: true,
+              characterData: true,
+              subtree: true
+            })
+            this.resetSize()
+        })
+    },
+    methods: {
+        resetSize() {
             const { scrollHeight, scrollWidth, clientWidth, clientHeight } = this.$refs.content
             this.scrollHeight = scrollHeight
             this.scrollWidth = scrollWidth
             this.clientWidth = clientWidth
             this.clientHeight = clientHeight
             const percentage = this.clientHeight / this.scrollHeight
-            this.showBar = true
+            this.showHorizontalTrack = true
             if(percentage === 1) {
-                this.showBar = false
+                this.showHorizontalTrack = false
             }
             this.thumbHeight = Math.round(this.clientHeight * percentage)
             if(this.thumbHeight < this.minThumbHeight) {
                 this.thumbHeight = this.minThumbHeight
             }
             this.percentage = (this.clientHeight - this.thumbHeight) / this.scrollHeight
-        })
-    },
-    methods: {
+        },
         pointerdown(e) {
             this.isDown = true
             const {clientX,clientY} = e
@@ -98,6 +108,7 @@ export default {
     beforeDestroy() {
         document.removeEventListener('pointerup', this.pointerup)
         document.removeEventListener('pointermove', this.pointermove)
+        if(this.observer) this.observer.disconnect()
     }
 }
 </script>
