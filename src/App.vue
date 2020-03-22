@@ -20,7 +20,7 @@ export default {
     },
     data () {
         return {
-            total: 10000
+            total: 1000
         }
     },
     methods: {

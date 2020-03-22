@@ -17,10 +17,14 @@
             </div>
         </div>
         <!-- 水平滚动条 -->
-        <div class="common-scrollBar-horizontal">
+        <div v-if="showHorizontal"
+             class="common-scrollBar-horizontal">
             <div ref="horizontalScrollBar"
                  class="common-scrollBar-horizontal-track">
-                <div class="common-scrollBar-horizontal-thumb"></div>
+                <div class="common-scrollBar-horizontal-thumb"
+                     :style="horizontalSliderStyle"
+                     @pointerdown="pointerdown('horizontal', $event)">
+                </div>
             </div>
         </div>
     </div>
@@ -34,6 +38,13 @@ export default {
                 height: `${this.verticalSliderSize}px`,
                 top: `${this.verticalSliderY}px`
             }
+        },
+        horizontalSliderStyle () {
+            // 水平滚动条
+            return {
+                width: `${this.horizontalSliderSize}px`,
+                left: `${this.horizontalSliderX}px`
+            }
         }
     },
     props: {
@@ -43,7 +54,7 @@ export default {
         },
         overflowY: {
             type: Boolean,
-            default: false
+            default: true
         },
     },
     data () {
@@ -58,18 +69,26 @@ export default {
             viewportHeight: 0,
             // 滑块最小的尺寸
             minSliderSize: 30,
-            // 垂直方向滚动条的高度
+            // 垂直方向滚动条的高
             verticalScrollBarHeight: 0,
             // 垂直方向滑块大小（按比例显示）
             verticalSliderSize: 0,
             // 垂直方向滑块移动的位置
             verticalSliderY: 0,
-            // 垂直方向滚动条内容大小的比例
+            // 垂直滚动条与垂直滚动区域的比例
             verticalRatio: 1,
             // 是否显示垂直滚动条
             showVertical: true,
+            // 水平方向滚动条的宽
+            horizontalScrollBarWidth: 0,
+            // 水平方向滑块大小（按比例显示）
+            horizontalSliderSize: 0,
+            // 水平方向滑块移动的位置
+            horizontalSliderX: 0,
+            // 水平滚动条与水平滚动区域的比例
+            horizontalRatio: 0,
             // 是否显示水平滚动条
-            showHorizontalTrack: false,
+            showHorizontal: true,
             // 是否激活鼠标移动和抬起标识
             activeBlock: false,
             // 鼠标点信息
@@ -128,6 +147,29 @@ export default {
             }
             this.verticalRatio = (this.verticalScrollBarHeight - this.verticalSliderSize) / (this.scrollHeight - this.viewportHeight)
         },
+        computeHorizontal () {
+            // 计算水平滚动条的数据
+            const horizontalRatio = this.horizontalScrollBarWidth / this.scrollWidth
+            this.showHorizontal = true
+            if (horizontalRatio === 1) {
+                this.showHorizontal = false
+            }
+            this.horizontalSliderSize = this.horizontalScrollBarWidth * horizontalRatio
+            if (this.horizontalSliderSize < this.minSliderSize) {
+                this.horizontalSliderSize = this.minSliderSize
+            }
+            if (this.horizontalSliderSize > this.horizontalScrollBarWidth) {
+                this.horizontalSliderSize = this.horizontalScrollBarWidth
+                this.showHorizontal = false
+            }
+            if (this.horizontalSliderX > 0 && (this.horizontalSliderX + this.horizontalSliderSize) >= this.horizontalScrollBarWidth) {
+                this.horizontalSliderX = this.horizontalScrollBarWidth - this.horizontalSliderSize
+            }
+            if (this.horizontalSliderX <= 0) {
+                this.horizontalSliderX = 0
+            }
+            this.horizontalRatio = (this.horizontalScrollBarWidth - this.horizontalSliderSize) / (this.scrollWidth - this.viewportWidth)
+        },
         resetSize () {
             const { clientWidth, clientHeight, scrollHeight, scrollWidth } = this.$refs.container
             this.scrollHeight = scrollHeight
@@ -135,10 +177,18 @@ export default {
             this.viewportWidth = clientWidth
             this.viewportHeight = clientHeight
             if (this.$refs.verticalScrollBar) {
+                // 获取垂直滚动条的高
                 this.verticalScrollBarHeight = this.$refs.verticalScrollBar.clientHeight
             }
-            if (this.overflowX) {
+            if (this.$refs.horizontalScrollBar) {
+                // 获取水平滚动条的宽
+                this.horizontalScrollBarWidth = this.$refs.horizontalScrollBar.clientWidth
+            }
+            if (this.overflowY) {
                 this.computeVertical()
+            }
+            if (this.overflowX) {
+                this.computeHorizontal()
             }
         },
         pointerdown (type, e) {
@@ -150,6 +200,7 @@ export default {
                 y: clientY
             }
             this.point.current.y = this.verticalSliderY
+            this.point.current.x = this.horizontalSliderX
         },
         pointerup (e) {
             if (!this.activeBlock) return
@@ -162,6 +213,10 @@ export default {
                 const diffY = clientY - this.point.start.y
                 this.verticalSliderY = diffY + this.point.current.y
                 this.verticalMove()
+            } else if (this.type === 'horizontal') {
+                const diffX = clientX - this.point.start.x
+                this.horizontalSliderX = diffX + this.point.current.x
+                this.horizontalMove()
             }
         },
         verticalMove () {
@@ -172,6 +227,15 @@ export default {
                 this.verticalSliderY = this.verticalScrollBarHeight - this.verticalSliderSize
             }
             this.$refs.container.scrollTop = this.verticalSliderY / this.verticalRatio
+        },
+        horizontalMove () {
+            if (this.horizontalSliderX <= 0) {
+                this.horizontalSliderX = 0
+            }
+            if (this.horizontalSliderX + this.horizontalSliderSize > this.horizontalScrollBarWidth) {
+                this.horizontalSliderX = this.horizontalScrollBarWidth - this.horizontalSliderSize
+            }
+            this.$refs.container.scrollLeft = this.horizontalSliderX / this.horizontalRatio
         },
         mousewheel (event) {
             const delta = event.wheelDelta
@@ -230,10 +294,10 @@ export default {
         width: 100%;
         height: 15px;
         background: red;
+        position: relative;
         &-track {
             width: calc(100% - 15px);
             height: 100%;
-            position: relative;
         }
         &-thumb {
             width: 50px;
