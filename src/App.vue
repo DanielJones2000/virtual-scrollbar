@@ -1,6 +1,7 @@
 <template>
     <div id="app">
         <button @click="del">删除</button>
+        <button @click="add">添加</button>
         <ScrollBar style="width:calc(100% - 100px);height:500px;border:1px solid #000;user-select:none;">
             <div>
                 <h2 v-for="item in total"
@@ -28,6 +29,9 @@ export default {
             if (this.total <= 1) {
                 this.total = 1
             }
+        },
+        add () {
+            this.total++
         }
     }
 }

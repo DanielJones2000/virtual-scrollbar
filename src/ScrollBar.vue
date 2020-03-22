@@ -1,14 +1,17 @@
 <template>
     <div class="common-scrollBar">
-        <div ref="content"
-             class="common-scrollBar-content">
+        <!-- 滚动内容 -->
+        <div ref="container"
+             class="common-scrollBar-container">
             <slot></slot>
         </div>
-        <div v-if="showVerticalTrack"
+        <!-- 纵向滚动条 -->
+        <div ref="verticalScrollBar"
+             v-show="showVertical"
              class="common-scrollBar-vertical-track">
             <div class="common-scrollBar-vertical-thumb"
-                 :style="thumbVerticalStyle"
-                 @pointerdown="pointerdown">
+                 :style="verticalSliderStyle"
+                 @pointerdown="pointerdown('vertical', $event)">
             </div>
         </div>
     </div>
@@ -16,43 +19,74 @@
 <script>
 export default {
     computed: {
-        thumbVerticalStyle () {
+        verticalSliderStyle () {
+            //纵向滚动条
             return {
-                height: `${this.thumbHeight}px`,
-                top: `${this.thumbY}px`
+                height: `${this.verticalSliderSize}px`,
+                top: `${this.verticalSliderY}px`
             }
         }
     },
+    props: {
+        overflowX: {
+            type: Boolean,
+            default: true
+        },
+        overflowY: {
+            type: Boolean,
+            default: false
+        },
+    },
     data () {
         return {
-            showVerticalTrack: false,
-            showHorizontalTrack: false,
+            //滚动内容包含隐藏部分的高
             scrollHeight: 0,
+            //滚动内容包含隐藏部分的宽
             scrollWidth: 0,
-            clientWidth: 0,
-            clientHeight: 0,
-            minThumbHeight: 30,
-            isDown: false,
+            // 滚动内容不包含隐藏部分的高
+            viewportWidth: 0,
+            // 滚动内容不包含隐藏部分的宽
+            viewportHeight: 0,
+            // 滑块最小的尺寸
+            minSliderSize: 30,
+            // 垂直方向滚动条的高度
+            verticalScrollBarHeight: 0,
+            // 垂直方向滑块大小（按比例显示）
+            verticalSliderSize: 0,
+            // 垂直方向滑块移动的位置
+            verticalSliderY: 0,
+            // 垂直方向滚动条内容大小的比例
+            verticalRatio: 1,
+            // 是否显示垂直滚动条
+            showVertical: true,
+            // 是否显示水平滚动条
+            showHorizontalTrack: false,
+            // 是否激活鼠标移动和抬起标识
+            activeBlock: false,
+            // 鼠标点信息
             point: {
+                // 按下时点的坐标
                 start: { x: 0, y: 0 },
+                // 当前点的坐标
                 current: { x: 0, y: 0 }
             },
-            thumbY: 0,
-            percentage: 1,
-            thumbHeight: 0,
-            observer: null
+            observer: null,
+            type: null
         }
     },
     created () {
         document.addEventListener('pointerup', this.pointerup, true)
         document.addEventListener('pointermove', this.pointermove, true)
+        window.onmousewheel = document.onmousewheel = event => {
+            this.mousewheel(event)
+        }
     },
     mounted () {
         this.observer = new MutationObserver(() => {
             this.resetSize()
         })
         this.$nextTick(() => {
-            this.observer.observe(this.$refs.content, {
+            this.observer.observe(this.$refs.container, {
                 attributes: true,
                 childList: true,
                 characterData: true,
@@ -62,48 +96,82 @@ export default {
         })
     },
     methods: {
+        computeVertical () {
+            // 计算垂直滚动条的数据
+            const verticalRatio = this.verticalScrollBarHeight / this.scrollHeight
+            this.showVertical = true
+            if (verticalRatio === 1) {
+                this.showVertical = false
+            }
+            this.verticalSliderSize = this.verticalScrollBarHeight * verticalRatio
+            if (this.verticalSliderSize < this.minSliderSize) {
+                this.verticalSliderSize = this.minSliderSize
+            }
+            if (this.verticalSliderSize > this.verticalScrollBarHeight) {
+                this.verticalSliderSize = this.verticalScrollBarHeight
+                this.showVertical = false
+            }
+            if (this.verticalSliderY > 0 && (this.verticalSliderY + this.verticalSliderSize) >= this.verticalScrollBarHeight) {
+                this.verticalSliderY = this.verticalScrollBarHeight - this.verticalSliderSize
+            }
+            if (this.verticalSliderY <= 0) {
+                this.verticalSliderY = 0
+            }
+            this.verticalRatio = (this.verticalScrollBarHeight - this.verticalSliderSize) / (this.scrollHeight - this.viewportHeight)
+        },
         resetSize () {
-            const { scrollHeight, scrollWidth, clientWidth, clientHeight } = this.$refs.content
+            const { clientWidth, clientHeight, scrollHeight, scrollWidth } = this.$refs.container
             this.scrollHeight = scrollHeight
             this.scrollWidth = scrollWidth
-            this.clientWidth = clientWidth
-            this.clientHeight = clientHeight
-            const percentage = this.clientHeight / this.scrollHeight
-            this.showVerticalTrack = true
-            if (percentage === 1) {
-                this.showVerticalTrack = false
+            this.viewportWidth = clientWidth
+            this.viewportHeight = clientHeight
+            if (this.$refs.verticalScrollBar) {
+                this.verticalScrollBarHeight = this.$refs.verticalScrollBar.clientHeight
             }
-            this.thumbHeight = Math.round(this.clientHeight * percentage)
-            if (this.thumbHeight < this.minThumbHeight) {
-                this.thumbHeight = this.minThumbHeight
+            if (this.overflowX) {
+                this.computeVertical()
             }
-            this.percentage = (this.clientHeight - this.thumbHeight) / this.scrollHeight
         },
-        pointerdown (e) {
-            this.isDown = true
+        pointerdown (type, e) {
+            this.type = type
+            this.activeBlock = true
             const { clientX, clientY } = e
             this.point.start = {
                 x: clientX,
                 y: clientY
             }
-            this.point.current.x = this.thumbY
+            this.point.current.y = this.verticalSliderY
         },
         pointerup (e) {
-            if (!this.isDown) return
-            this.isDown = false
+            if (!this.activeBlock) return
+            this.activeBlock = false
         },
         pointermove (e) {
-            if (!this.isDown) return
+            if (!this.activeBlock) return
             const { clientX, clientY } = e
-            const diffY = clientY - this.point.start.y
-            this.thumbY = diffY + this.point.current.x
-            if (this.thumbY <= 0) {
-                this.thumbY = 0
+            if (this.type === 'vertical') {
+                const diffY = clientY - this.point.start.y
+                this.verticalSliderY = diffY + this.point.current.y
+                this.verticalMove()
             }
-            if (this.thumbY + this.thumbHeight > this.clientHeight) {
-                this.thumbY = this.clientHeight - this.thumbHeight
+        },
+        verticalMove () {
+            if (this.verticalSliderY <= 0) {
+                this.verticalSliderY = 0
             }
-            this.$refs.content.scrollTop = this.thumbY / this.percentage
+            if (this.verticalSliderY + this.verticalSliderSize > this.verticalScrollBarHeight) {
+                this.verticalSliderY = this.verticalScrollBarHeight - this.verticalSliderSize
+            }
+            this.$refs.container.scrollTop = this.verticalSliderY / this.verticalRatio
+        },
+        mousewheel (event) {
+            const delta = event.wheelDelta
+            if (delta > 0) {
+                this.verticalSliderY--
+            } else if (delta < 0) {
+                this.verticalSliderY++
+            }
+            this.verticalMove()
         }
     },
     beforeDestroy () {
@@ -120,7 +188,7 @@ export default {
     align-items: center;
     touch-action: none;
     // 内容
-    &-content {
+    &-container {
         width: 100%;
         height: 100%;
         overflow: hidden;
@@ -129,14 +197,14 @@ export default {
     &-vertical {
         &-track {
             height: 100%;
-            width: 30px;
-            background: red;
+            width: 10px;
+            background: #222;
             position: relative;
         }
         &-thumb {
             width: 100%;
             height: 50px;
-            background: black;
+            background: red;
             position: absolute;
             cursor: pointer;
         }
