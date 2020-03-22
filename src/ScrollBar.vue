@@ -1,17 +1,26 @@
 <template>
     <div class="common-scrollBar">
-        <!-- 滚动内容 -->
-        <div ref="container"
-             class="common-scrollBar-container">
-            <slot></slot>
+        <div class="common-scrollBar-vertical">
+            <!-- 滚动内容 -->
+            <div ref="container"
+                 class="common-scrollBar-container">
+                <slot></slot>
+            </div>
+            <!-- 纵向滚动条 -->
+            <div ref="verticalScrollBar"
+                 v-show="showVertical"
+                 class="common-scrollBar-vertical-track">
+                <div class="common-scrollBar-vertical-thumb"
+                     :style="verticalSliderStyle"
+                     @pointerdown="pointerdown('vertical', $event)">
+                </div>
+            </div>
         </div>
-        <!-- 纵向滚动条 -->
-        <div ref="verticalScrollBar"
-             v-show="showVertical"
-             class="common-scrollBar-vertical-track">
-            <div class="common-scrollBar-vertical-thumb"
-                 :style="verticalSliderStyle"
-                 @pointerdown="pointerdown('vertical', $event)">
+        <!-- 水平滚动条 -->
+        <div class="common-scrollBar-horizontal">
+            <div ref="horizontalScrollBar"
+                 class="common-scrollBar-horizontal-track">
+                <div class="common-scrollBar-horizontal-thumb"></div>
             </div>
         </div>
     </div>
@@ -183,10 +192,13 @@ export default {
 </script>
 <style lang="less">
 .common-scrollBar {
+    touch-action: none;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-items: center;
     align-items: center;
-    touch-action: none;
+    flex-direction: column;
     // 内容
     &-container {
         width: 100%;
@@ -195,16 +207,38 @@ export default {
     }
     // 纵向滚动条
     &-vertical {
+        width: 100%;
+        height: calc(100% - 15px);
+        display: flex;
+        justify-items: center;
+        align-items: center;
         &-track {
             height: 100%;
-            width: 10px;
-            background: #222;
+            width: 15px;
+            background: red;
             position: relative;
         }
         &-thumb {
             width: 100%;
             height: 50px;
-            background: red;
+            background: #000;
+            position: absolute;
+            cursor: pointer;
+        }
+    }
+    &-horizontal {
+        width: 100%;
+        height: 15px;
+        background: red;
+        &-track {
+            width: calc(100% - 15px);
+            height: 100%;
+            position: relative;
+        }
+        &-thumb {
+            width: 50px;
+            height: 100%;
+            background: #000;
             position: absolute;
             cursor: pointer;
         }
