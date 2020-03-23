@@ -7,8 +7,8 @@
                 <slot></slot>
             </div>
             <!-- 纵向滚动条 -->
-            <div ref="verticalScrollBar"
-                 v-show="showVertical"
+            <div v-show="showVertical"
+                 ref="verticalScrollBar"
                  class="common-scrollBar-vertical-track">
                 <div class="common-scrollBar-vertical-thumb"
                      :style="verticalSliderStyle"
@@ -31,22 +31,6 @@
 </template>
 <script>
 export default {
-    computed: {
-        verticalSliderStyle() {
-            //纵向滚动条
-            return {
-                height: `${this.verticalSliderSize}px`,
-                top: `${this.verticalSliderY}px`
-            }
-        },
-        horizontalSliderStyle() {
-            // 水平滚动条
-            return {
-                width: `${this.horizontalSliderSize}px`,
-                left: `${this.horizontalSliderX}px`
-            }
-        }
-    },
     props: {
         overflowX: {
             type: Boolean,
@@ -59,9 +43,9 @@ export default {
     },
     data() {
         return {
-            //滚动内容包含隐藏部分的高
+            // 滚动内容包含隐藏部分的高
             scrollHeight: 0,
-            //滚动内容包含隐藏部分的宽
+            // 滚动内容包含隐藏部分的宽
             scrollWidth: 0,
             // 滚动内容不包含隐藏部分的高
             viewportWidth: 0,
@@ -102,10 +86,26 @@ export default {
             type: null
         }
     },
+    computed: {
+        verticalSliderStyle() {
+            // 纵向滚动条
+            return {
+                height: `${this.verticalSliderSize}px`,
+                top: `${this.verticalSliderY}px`
+            }
+        },
+        horizontalSliderStyle() {
+            // 水平滚动条
+            return {
+                width: `${this.horizontalSliderSize}px`,
+                left: `${this.horizontalSliderX}px`
+            }
+        }
+    },
     created() {
         document.addEventListener('pointerup', this.pointerup, true)
         document.addEventListener('pointermove', this.pointermove, true)
-        window.onmousewheel = document.onmousewheel = event => {
+        window.onmousewheel = event => {
             this.mousewheel(event)
         }
     },
@@ -122,6 +122,11 @@ export default {
             })
             this.resetSize()
         })
+    },
+    beforeDestroy() {
+        document.removeEventListener('pointerup', this.pointerup)
+        document.removeEventListener('pointermove', this.pointermove)
+        if (this.observer) this.observer.disconnect()
     },
     methods: {
         computeVertical() {
@@ -171,7 +176,9 @@ export default {
             this.horizontalRatio = (this.horizontalScrollBarWidth - this.horizontalSliderSize) / (this.scrollWidth - this.viewportWidth)
         },
         resetSize() {
-            const { clientWidth, clientHeight, scrollHeight, scrollWidth } = this.$refs.container
+            const {
+                clientWidth, clientHeight, scrollHeight, scrollWidth
+            } = this.$refs.container
             this.scrollHeight = scrollHeight
             this.scrollWidth = scrollWidth
             this.viewportWidth = clientWidth
@@ -202,7 +209,7 @@ export default {
             this.point.current.y = this.verticalSliderY
             this.point.current.x = this.horizontalSliderX
         },
-        pointerup(e) {
+        pointerup() {
             if (!this.activeBlock) return
             this.activeBlock = false
         },
@@ -240,17 +247,12 @@ export default {
         mousewheel(event) {
             const delta = event.wheelDelta
             if (delta > 0) {
-                this.verticalSliderY--
+                this.verticalSliderY -= 10
             } else if (delta < 0) {
-                this.verticalSliderY++
+                this.verticalSliderY += 10
             }
             this.verticalMove()
         }
-    },
-    beforeDestroy() {
-        document.removeEventListener('pointerup', this.pointerup)
-        document.removeEventListener('pointermove', this.pointermove)
-        if (this.observer) this.observer.disconnect()
     }
 }
 </script>
