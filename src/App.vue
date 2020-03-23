@@ -3,10 +3,10 @@
         <button @click="del">删除</button>
         <button @click="add">添加</button>
         <ScrollBar style="width:calc(100% - 100px);height:500px;border:1px solid #000;user-select:none;">
-            <div style="width:2000px;">
-                <span v-for="item in total"
-                      :key="item">line:{{item}} -- 测试节点</span>
-            </div>
+            <!-- <div style="width:2000px;"> -->
+            <span v-for="item in total"
+                  :key="item">line:{{item}} -- 测试节点<br /></span>
+            <!-- </div> -->
         </ScrollBar>
     </div>
 </template>
@@ -20,7 +20,7 @@ export default {
     },
     data() {
         return {
-            total: 1000
+            total: 100
         }
     },
     methods: {
