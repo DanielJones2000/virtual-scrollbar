@@ -272,10 +272,11 @@ export default {
     // 纵向滚动条
     &-vertical {
         width: 100%;
-        height: calc(100% - 15px);
+        height: 100%;
         display: flex;
         justify-items: center;
         align-items: center;
+        overflow: hidden;
         &-track {
             height: 100%;
             width: 15px;
