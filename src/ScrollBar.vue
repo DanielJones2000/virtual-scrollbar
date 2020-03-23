@@ -32,14 +32,14 @@
 <script>
 export default {
     computed: {
-        verticalSliderStyle () {
+        verticalSliderStyle() {
             //纵向滚动条
             return {
                 height: `${this.verticalSliderSize}px`,
                 top: `${this.verticalSliderY}px`
             }
         },
-        horizontalSliderStyle () {
+        horizontalSliderStyle() {
             // 水平滚动条
             return {
                 width: `${this.horizontalSliderSize}px`,
@@ -57,7 +57,7 @@ export default {
             default: true
         },
     },
-    data () {
+    data() {
         return {
             //滚动内容包含隐藏部分的高
             scrollHeight: 0,
@@ -102,14 +102,14 @@ export default {
             type: null
         }
     },
-    created () {
+    created() {
         document.addEventListener('pointerup', this.pointerup, true)
         document.addEventListener('pointermove', this.pointermove, true)
         window.onmousewheel = document.onmousewheel = event => {
             this.mousewheel(event)
         }
     },
-    mounted () {
+    mounted() {
         this.observer = new MutationObserver(() => {
             this.resetSize()
         })
@@ -124,7 +124,7 @@ export default {
         })
     },
     methods: {
-        computeVertical () {
+        computeVertical() {
             // 计算垂直滚动条的数据
             const verticalRatio = this.verticalScrollBarHeight / this.scrollHeight
             this.showVertical = true
@@ -147,7 +147,7 @@ export default {
             }
             this.verticalRatio = (this.verticalScrollBarHeight - this.verticalSliderSize) / (this.scrollHeight - this.viewportHeight)
         },
-        computeHorizontal () {
+        computeHorizontal() {
             // 计算水平滚动条的数据
             const horizontalRatio = this.horizontalScrollBarWidth / this.scrollWidth
             this.showHorizontal = true
@@ -170,7 +170,7 @@ export default {
             }
             this.horizontalRatio = (this.horizontalScrollBarWidth - this.horizontalSliderSize) / (this.scrollWidth - this.viewportWidth)
         },
-        resetSize () {
+        resetSize() {
             const { clientWidth, clientHeight, scrollHeight, scrollWidth } = this.$refs.container
             this.scrollHeight = scrollHeight
             this.scrollWidth = scrollWidth
@@ -191,7 +191,7 @@ export default {
                 this.computeHorizontal()
             }
         },
-        pointerdown (type, e) {
+        pointerdown(type, e) {
             this.type = type
             this.activeBlock = true
             const { clientX, clientY } = e
@@ -202,11 +202,11 @@ export default {
             this.point.current.y = this.verticalSliderY
             this.point.current.x = this.horizontalSliderX
         },
-        pointerup (e) {
+        pointerup(e) {
             if (!this.activeBlock) return
             this.activeBlock = false
         },
-        pointermove (e) {
+        pointermove(e) {
             if (!this.activeBlock) return
             const { clientX, clientY } = e
             if (this.type === 'vertical') {
@@ -219,7 +219,7 @@ export default {
                 this.horizontalMove()
             }
         },
-        verticalMove () {
+        verticalMove() {
             if (this.verticalSliderY <= 0) {
                 this.verticalSliderY = 0
             }
@@ -228,7 +228,7 @@ export default {
             }
             this.$refs.container.scrollTop = this.verticalSliderY / this.verticalRatio
         },
-        horizontalMove () {
+        horizontalMove() {
             if (this.horizontalSliderX <= 0) {
                 this.horizontalSliderX = 0
             }
@@ -237,7 +237,7 @@ export default {
             }
             this.$refs.container.scrollLeft = this.horizontalSliderX / this.horizontalRatio
         },
-        mousewheel (event) {
+        mousewheel(event) {
             const delta = event.wheelDelta
             if (delta > 0) {
                 this.verticalSliderY--
@@ -247,7 +247,7 @@ export default {
             this.verticalMove()
         }
     },
-    beforeDestroy () {
+    beforeDestroy() {
         document.removeEventListener('pointerup', this.pointerup)
         document.removeEventListener('pointermove', this.pointermove)
         if (this.observer) this.observer.disconnect()

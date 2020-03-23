@@ -3,10 +3,8 @@
         <button @click="del">删除</button>
         <button @click="add">添加</button>
         <ScrollBar style="width:calc(100% - 100px);height:500px;border:1px solid #000;user-select:none;">
-            <div style="width:20000px">
-                <span v-for="item in total"
-                      :key="item">line:{{item}} -- 测试节点</span>
-            </div>
+            <span v-for="item in total"
+                  :key="item">line:{{item}} -- 测试节点</span>
         </ScrollBar>
     </div>
 </template>
@@ -18,19 +16,19 @@ export default {
     components: {
         ScrollBar
     },
-    data () {
+    data() {
         return {
             total: 1000
         }
     },
     methods: {
-        del () {
+        del() {
             this.total--
             if (this.total <= 1) {
                 this.total = 1
             }
         },
-        add () {
+        add() {
             this.total++
         }
     }
