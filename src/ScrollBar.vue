@@ -22,7 +22,8 @@
              class="common-scrollBar-horizontal"
              :class="{visibility:showHorizontal}">
             <div ref="horizontalScrollBar"
-                 class="common-scrollBar-horizontal-track">
+                 class="common-scrollBar-horizontal-track"
+                 :class="{overflowY:overflowY}">
                 <div class="common-scrollBar-horizontal-thumb"
                      :style="horizontalSliderStyle"
                      @pointerdown="pointerdown('horizontal', $event)">
@@ -133,7 +134,7 @@ export default {
     methods: {
         computeVertical() {
             // 计算垂直滚动条的数据
-            const verticalRatio = this.verticalScrollBarHeight / this.scrollHeight
+            const verticalRatio = this.viewportHeight / this.scrollHeight
             this.showVertical = true
             if (verticalRatio === 1) {
                 this.showVertical = false
@@ -156,7 +157,7 @@ export default {
         },
         computeHorizontal() {
             // 计算水平滚动条的数据
-            const horizontalRatio = this.horizontalScrollBarWidth / this.scrollWidth
+            const horizontalRatio = this.viewportWidth / this.scrollWidth
             this.showHorizontal = true
             if (horizontalRatio === 1) {
                 this.showHorizontal = false
@@ -259,6 +260,7 @@ export default {
 }
 </script>
 <style lang="less">
+@common-scrollBar-track-size: 15px;
 .common-scrollBar {
     touch-action: none;
     width: 100%;
@@ -284,7 +286,7 @@ export default {
         &-track {
             visibility: hidden;
             height: 100%;
-            width: 15px;
+            width: @common-scrollBar-track-size;
             background: red;
             position: relative;
             &.visibility {
@@ -301,15 +303,18 @@ export default {
     }
     &-horizontal {
         width: 100%;
-        height: 15px;
+        height: @common-scrollBar-track-size;
         background: red;
         position: relative;
+        visibility: hidden;
+        &.visibility {
+            visibility: visible;
+        }
         &-track {
-            visibility: hidden;
-            width: calc(100% - 15px);
+            width: 100%;
             height: 100%;
-            &.visibility {
-                visibility: visible;
+            &.overflowY {
+                width: calc(100% - @common-scrollBar-track-size);
             }
         }
         &-thumb {
