@@ -7,9 +7,10 @@
                 <slot></slot>
             </div>
             <!-- 纵向滚动条 -->
-            <div v-show="showVertical"
+            <div v-show="overflowY"
                  ref="verticalScrollBar"
-                 class="common-scrollBar-vertical-track">
+                 class="common-scrollBar-vertical-track"
+                 :class="{visibility:showVertical}">
                 <div class="common-scrollBar-vertical-thumb"
                      :style="verticalSliderStyle"
                      @pointerdown="pointerdown('vertical', $event)">
@@ -17,8 +18,9 @@
             </div>
         </div>
         <!-- 水平滚动条 -->
-        <div v-if="showHorizontal"
-             class="common-scrollBar-horizontal">
+        <div v-show="overflowX"
+             class="common-scrollBar-horizontal"
+             :class="{visibility:showHorizontal}">
             <div ref="horizontalScrollBar"
                  class="common-scrollBar-horizontal-track">
                 <div class="common-scrollBar-horizontal-thumb"
@@ -280,10 +282,14 @@ export default {
         align-items: center;
         overflow: hidden;
         &-track {
+            visibility: hidden;
             height: 100%;
             width: 15px;
             background: red;
             position: relative;
+            &.visibility {
+                visibility: visible;
+            }
         }
         &-thumb {
             width: 100%;
@@ -299,8 +305,12 @@ export default {
         background: red;
         position: relative;
         &-track {
+            visibility: hidden;
             width: calc(100% - 15px);
             height: 100%;
+            &.visibility {
+                visibility: visible;
+            }
         }
         &-thumb {
             width: 50px;
