@@ -33,6 +33,7 @@
     </div>
 </template>
 <script>
+import "./ScrollBar.less"
 export default {
     props: {
         overflowX: {
@@ -259,71 +260,3 @@ export default {
     }
 }
 </script>
-<style lang="less">
-@common-scrollBar-track-size: 15px;
-.common-scrollBar {
-    touch-action: none;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-items: center;
-    align-items: center;
-    flex-direction: column;
-    // 内容
-    &-container {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-    // 纵向滚动条
-    &-vertical {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-items: center;
-        align-items: center;
-        overflow: hidden;
-        &-track {
-            visibility: hidden;
-            height: 100%;
-            width: @common-scrollBar-track-size;
-            background: red;
-            position: relative;
-            &.visibility {
-                visibility: visible;
-            }
-        }
-        &-thumb {
-            width: 100%;
-            height: 50px;
-            background: #000;
-            position: absolute;
-            cursor: pointer;
-        }
-    }
-    &-horizontal {
-        width: 100%;
-        height: @common-scrollBar-track-size;
-        background: red;
-        position: relative;
-        visibility: hidden;
-        &.visibility {
-            visibility: visible;
-        }
-        &-track {
-            width: 100%;
-            height: 100%;
-            &.overflowY {
-                width: calc(100% - @common-scrollBar-track-size);
-            }
-        }
-        &-thumb {
-            width: 50px;
-            height: 100%;
-            background: #000;
-            position: absolute;
-            cursor: pointer;
-        }
-    }
-}
-</style>
